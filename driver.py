@@ -1,4 +1,6 @@
 import feature_extractor as fe
+from sklearn.cross_validation import cross_val_score
+from sklearn.naive_bayes import GaussianNB
 import csv
 
 '''Important Notes:
@@ -30,10 +32,13 @@ def decade_features():
     f.close()
     f2.close()
 
+    return features
+
 def generic_features(infile, outfile):
     '''Extracts features from any lyric dataset in the format of (title, artist, lyrics, label)'''
     lyric_dict = {}
     lyrics = []
+    labels = []
     cfig = ['syn', 'lex', 'plex']
 
     f = open(infile, 'rt', encoding="utf8")
@@ -42,6 +47,7 @@ def generic_features(infile, outfile):
         lyric_dict[(r[0], r[1], r[3])] = r[2] #title, artist, label:lyrics
     for key in lyric_dict:
         lyrics.append(lyric_dict[key])
+        labels.append(key[2])
 
     features, header = fe.extract_features(lyrics, cfig)
     f2 = open(outfile, 'w', encoding="utf8")
@@ -53,8 +59,20 @@ def generic_features(infile, outfile):
     f.close()
     f2.close()
 
-decade_features()
-generic_features("datasets/all_lyrics.csv", "datasets/nltk_all.csv")
-generic_features("datasets/coldplay_lyrics.csv", "datasets/nltk_coldplay.csv")
-generic_features("datasets/drake_lyrics.csv", "datasets/drake_all.csv")
-generic_features("datasets/rihanna_lyrics.csv", "datasets/rihanna_all.csv")
+    return features, labels
+
+def predict_popularity(X, Y):
+    scores = cross_val_score(GaussianNB(), X, Y, scoring='accuracy', cv=10)
+    return scores.mean()
+
+if __name__ == "__main__":
+    #decade_features()
+    all_, ah= generic_features("datasets/all_lyrics.csv", "datasets/nltk_all.csv")
+    coldplay_, ch = generic_features("datasets/coldplay_lyrics.csv", "datasets/nltk_coldplay.csv")
+    drake_, dh = generic_features("datasets/drake_lyrics.csv", "datasets/nltk_drake.csv")
+    rihanna_, rh = generic_features("datasets/rihanna_lyrics.csv", "datasets/nltk_rihanna.csv")
+
+    print("last 10 weeks prediction: ", predict_popularity(all_,ah))
+    print("coldplay prediction: ", predict_popularity(coldplay_,ch))
+    print("drake prediction: ", predict_popularity(drake_,dh))
+    print("rihanna prediction: ", predict_popularity(rihanna_,rh))
