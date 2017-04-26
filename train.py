@@ -11,7 +11,7 @@ from sklearn.feature_selection import f_classif
 from sklearn.feature_selection import VarianceThreshold
 
 def getData():
-    df = pd.read_csv(filepath_or_buffer='datasets/LIWC2015allSongsLyricData.csv', delimiter=",", header=None)
+    df = pd.read_csv(filepath_or_buffer='datasets/liwc_drake.csv', delimiter=",", header=None)
     data = df.values
     y_data = data[1:,3]
     x_data = np.delete(data, [0,1,2,3], axis=1)
