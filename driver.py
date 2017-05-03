@@ -10,10 +10,10 @@ import csv
 
 def decade_features():
     '''Extracts features from the 2006-2015 lyrics dataset'''
-    infile = "datasets/decade_lyrics.csv"
+    infile = "datasets/lyrics_decade.csv"
     lyric_dict = {}
     lyrics = []
-    cfig = ['fw', 'syn', 'lex', 'punct', 'plex']
+    cfig = ['lem', 'plex']
 
     f = open(infile, 'rt')
     reader = csv.reader(f)
@@ -39,7 +39,7 @@ def generic_features(infile, outfile):
     lyric_dict = {}
     lyrics = []
     labels = []
-    cfig = ['syn', 'lex', 'plex']
+    cfig = ['lem', 'plex']
 
     f = open(infile, 'rt', encoding="utf8")
     reader = csv.reader(f)
@@ -66,13 +66,13 @@ def predict_popularity(X, Y):
     return scores.mean()
 
 if __name__ == "__main__":
-    #decade_features()
-    all_, ah= generic_features("datasets/all_lyrics.csv", "datasets/nltk_all.csv")
-    coldplay_, ch = generic_features("datasets/coldplay_lyrics.csv", "datasets/nltk_coldplay.csv")
-    drake_, dh = generic_features("datasets/drake_lyrics.csv", "datasets/nltk_drake.csv")
-    rihanna_, rh = generic_features("datasets/rihanna_lyrics.csv", "datasets/nltk_rihanna.csv")
+    decade_features()
+    all_, ah= generic_features("datasets/lyrics_all.csv", "datasets/nltk_all.csv")
+    coldplay_, ch = generic_features("datasets/lyrics_coldplay.csv", "datasets/nltk_coldplay.csv")
+    drake_, dh = generic_features("datasets/lyrics_drake.csv", "datasets/nltk_drake.csv")
+    rihanna_, rh = generic_features("datasets/lyrics_rihanna.csv", "datasets/nltk_rihanna.csv")
 
     print("last 10 weeks prediction: ", predict_popularity(all_,ah))
     print("coldplay prediction: ", predict_popularity(coldplay_,ch))
-    print("drake prediction: ", predict_popularity(drake_,dh))
     print("rihanna prediction: ", predict_popularity(rihanna_,rh))
+    print("drake prediction: ", predict_popularity(drake_,dh))

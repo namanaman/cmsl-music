@@ -3,6 +3,7 @@
 from nltk.corpus import stopwords
 from nltk.util import ngrams
 from collections import Counter
+from nltk.stem import WordNetLemmatizer
 import nltk
 import re
 import numpy as np
@@ -21,6 +22,39 @@ def function_words(texts):
 		bow.append(counts)
 	bow_np = np.array(bow).astype(float)
 	return bow_np, header	
+
+def lemma_words(texts):
+	'''
+	Returns a len(texts) x 30 array with counts of the most common 30 lemmas
+	across all texts, AND the corresponding header.
+	'''
+	lem = WordNetLemmatizer()
+	lexical_mx = np.zeros((len(texts), 30)) #initialize counts to zero
+	mega_lexicon = [] #stores all lemmas for all texts
+	sw = stopwords.words('english')
+	punc = ['.', ',', ':', ';', '-', '\'', '\"', '(', ')','!', '?', 's', 't']
+	for text in texts: #remove stopwords and punctuation
+		tokens = nltk.word_tokenize(text)
+		tokens = list(filter(lambda x: x not in sw, tokens))
+		tokens = list(filter(lambda x: x not in punc, tokens))
+		for t in tokens:
+			mega_lexicon.append(lem.lemmatize(t)) #add all tokens to lexicon
+	#obtain most common 30 lemmas and sort into list
+	lemmas = Counter(mega_lexicon).most_common(30)
+	sorted_lemmas = sorted(lemmas, key=operator.itemgetter(1), reverse=True)
+	for t, text in enumerate(texts): #count unigrams for each text
+		tokens = nltk.word_tokenize(text)
+		tokens = list(filter(lambda x: x not in sw, tokens))
+		tokens = list(filter(lambda x: x not in punc, tokens))
+		l_tokens = [lem.lemmatize(t) for t in tokens]
+		for u, l in enumerate([x[0] for x in sorted_lemmas]):
+			if len(l_tokens) == 0: #temp fix
+				lexical_mx[t][u] += 0
+			else:
+				lexical_mx[t][u] += l_tokens.count(l)/float(len(l_tokens)) #store normed unigram counts
+	header = [x[0] for x in sorted_lemmas]
+
+	return lexical_mx, header
 
 def syntax(texts):
 	'''
@@ -51,10 +85,8 @@ def lexical(texts):
 	Returns a len(texts) x 30 array with counts of the most common 30 unigrams
 	across all texts, AND the corresponding header.
 	'''
-
 	lexical_mx = np.zeros((len(texts), 30)) #initialize counts to zero
 	mega_lexicon = [] #stores all tokens for all texts
-	
 	sw = stopwords.words('english')
 	punc = ['.', ',', ':', ';', '-', '\'', '\"', '(', ')','!', '?', 's', 't']
 
@@ -62,13 +94,10 @@ def lexical(texts):
 		tokens = nltk.word_tokenize(text)
 		tokens = list(filter(lambda x: x not in sw, tokens))
 		tokens = list(filter(lambda x: x not in punc, tokens))
-
 		mega_lexicon.extend(tokens) #add all tokens to lexicon
-
 	#obtain most common 30 unigrams and sort into list
 	unigrams = Counter(mega_lexicon).most_common(30)
 	sorted_unigrams = sorted(unigrams, key=operator.itemgetter(1), reverse=True)
-
 	for t, text in enumerate(texts): #count unigrams for each text
 		tokens = nltk.word_tokenize(text)
 		tokens = list(filter(lambda x: x not in sw, tokens))
@@ -78,30 +107,10 @@ def lexical(texts):
 				lexical_mx[t][u] += 0
 			else:
 				lexical_mx[t][u] += tokens.count(gram)/float(len(tokens)) #store normed unigram counts
-
 	header = [x[0] for x in sorted_unigrams]
 
 	return lexical_mx, header
 		
-		
-def punctuation(texts):
-	'''
-	Returns a len(texts) x 10 array with counts of the 10 punctuation marks
-	for each text, as well as the corresponding header.
-	'''
-
-	punct_array = ['.', ',', ':', ';', '-', '\'', '\"', '(', '!', '?']
-	header = ['period', 'comma', 'colon', 'semi-colon', 'dash', 'single quote', 'double quotes', 'left paren', 'right paren', 'question mark']
-
-	punctuation_mx = np.zeros((len(texts), 10)) #initialize punctuation counts to zero
-
-	for t, text in enumerate(texts): #count punctation marks per text
-		tokens = nltk.word_tokenize(text)
-		for p, punct in enumerate(punct_array):
-			punctuation_mx[t][p] = tokens.count(punct)/len(tokens)
-
-	return punctuation_mx, header
-
 def complexity(texts):
 	'''
 	Returns a len(texts) x 4 array with counts for 4 complexity checks:
@@ -109,7 +118,7 @@ def complexity(texts):
 	across all texts, AND the corresponding header.
 	'''
 
-	header = ['average characters', 'uniqueness', 'average words', 'num long words']
+	header = ['average characters', 'uniqueness', 'num long words']
 	complexity_mx = np.zeros((len(texts), 4))
 
 	sw = stopwords.words('english')
@@ -125,24 +134,17 @@ def complexity(texts):
 		else:
 			complexity_mx[t][1] = 0
 
-		sentences = re.split('[?.!]', text)
-		num_words = 0
-		for sentence in sentences:
-			word_list = sentence.split()
-			num_words += len(word_list)
-		complexity_mx[t][2] = num_words/len(sentences) #store average word counts
-		
 		tokens = list(filter(lambda x: x not in punc, tokens))
 		num_chars = 0
 		for token in tokens:
 			if len(token) >= 6:
-				complexity_mx[t][3] += 1 #store num long words
+				complexity_mx[t][2] += 1 #store num long words
 			num_chars += len(token)
 		if len(tokens) != 0:
-			complexity_mx[t][3] = complexity_mx[t][3]/len(tokens)
+			complexity_mx[t][2] = complexity_mx[t][3]/len(tokens)
 			complexity_mx[t][0]	= num_chars/len(tokens)	#store average character counts
 		else:
-			complexity_mx[t][3] = 0
+			complexity_mx[t][2] = 0
 			complexity_mx[t][0] = 0
 
 	return complexity_mx, header
@@ -175,6 +177,11 @@ def extract_features(texts, conf):
 		f,h = complexity(texts)
 		features.append(f)
 		headers.extend(h)
+
+	if 'lem' in conf:
+		f,h = lemma_words(texts)
+		features.append(f)
+		headers.extend(h)		
 
 	all_features = np.concatenate(features,axis=1)
 
