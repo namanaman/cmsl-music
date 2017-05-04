@@ -66,6 +66,7 @@ def predict_popularity(X, Y):
     return scores.mean()
 
 if __name__ == "__main__":
+    '''create csv files for features and print prediction accuracies'''
     decade_features()
     all_, ah= generic_features("datasets/lyrics_all.csv", "datasets/nltk_all.csv")
     coldplay_, ch = generic_features("datasets/lyrics_coldplay.csv", "datasets/nltk_coldplay.csv")
