@@ -3,6 +3,8 @@ import requests
 import base64
 import pickle
 
+#Gets unpopular songs from same album for 10-Week Corpus
+
 def readCSV():
     filename = 'billboardSongSpotifyID.csv'
     with open(filename, 'r') as f:

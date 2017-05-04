@@ -17,6 +17,8 @@ from sklearn.model_selection import cross_val_score
 from sklearn.feature_selection import SelectFromModel
 from sklearn.feature_selection import RFE
 
+#Runs classifiers and regression on LIWC data to find accuracies
+
 def getData(modelType, filename):
     df = pd.read_csv(filepath_or_buffer=filename, delimiter=",", header=None)
     data = df.values
@@ -47,8 +49,8 @@ def model(modelType, filename):
     return scores.mean(), scores.std() * 2
 
 if __name__ == "__main__":
-    #mean, std = model('regression', 'datasets/liwc_decade.csv')
-    mean, std = model('classifier', 'datasets/liwc_all.csv')
+    #mean, std = model('regression', 'datasets/liwc_10Year.csv')
+    mean, std = model('classifier', 'datasets/liwc_10Week.csv')
     #mean, std = model('classifier', 'datasets/liwc_rihanna.csv')
     #mean, std = model('classifier', 'datasets/liwc_drake.csv')
 
