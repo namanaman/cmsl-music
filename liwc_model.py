@@ -5,11 +5,17 @@ import csv
 from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
 from sklearn import linear_model
+from sklearn.svm import LinearSVC
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.neighbors import KNeighborsClassifier
 
 from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import f_regression
 from sklearn.feature_selection import f_classif
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.model_selection import cross_val_score
+from sklearn.feature_selection import SelectFromModel
+from sklearn.feature_selection import RFE
 
 def getData(modelType, filename):
     df = pd.read_csv(filepath_or_buffer=filename, delimiter=",", header=None)
@@ -22,32 +28,28 @@ def getData(modelType, filename):
 
     x_data = np.delete(data, [0,1,2,3], axis=1)
     x_data = np.delete(x_data, [0], axis=0)
-
-    #x_data = data[1:,[4]] #WC only
+    #x_data = data[1:,[4, 56, 73]]
 
     return x_data, y_data
 
 def model(modelType, filename):
     X, y = getData(modelType, filename)
-    #X = SelectKBest(f_classif, k=10).fit_transform(X, y)
-    #X = VarianceThreshold(threshold=0.95).fit_transform(X)
 
     if modelType == 'regression':
-        clf = linear_model.LinearRegression()
+        mod = LinearSVC(C=0.01, penalty="l1", dual=False)
     elif modelType == 'classifier':
-        #clf = GaussianNB()
-        clf = SVC(kernel='linear')
+        #selector = SelectKBest(f_classif, k=8)
+        #X = selector.fit_transform(X, y)
+        #print(selector.get_support(indices=True))
+        mod = GaussianNB()
 
-    scores = cross_val_score(clf, X, y, cv=10)
+    scores = cross_val_score(mod, X, y, cv=10)
     return scores.mean(), scores.std() * 2
 
 if __name__ == "__main__":
-    #Regression
     #mean, std = model('regression', 'datasets/liwc_decade.csv')
-
-    #Classification
     mean, std = model('classifier', 'datasets/liwc_all.csv')
-    #mean, std = model('regression', 'datasets/liwc_rihanna.csv')
-    #mean, std = model('regression', 'datasets/liwc_drake.csv')
+    #mean, std = model('classifier', 'datasets/liwc_rihanna.csv')
+    #mean, std = model('classifier', 'datasets/liwc_drake.csv')
 
     print("Score: %0.2f (+/- %0.2f)" % (mean, std * 2))
