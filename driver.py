@@ -10,7 +10,7 @@ import csv
 
 def decade_features():
     '''Extracts features from the 2006-2015 lyrics dataset'''
-    infile = "datasets/lyrics_decade.csv"
+    infile = "datasets/lyrics_10Year.csv"
     lyric_dict = {}
     lyrics = []
     cfig = ['lem', 'plex']
@@ -23,7 +23,7 @@ def decade_features():
         lyrics.append(lyric_dict[key])
 
     features, header = fe.extract_features(lyrics, cfig)
-    f2 = open("datasets/nltk_decade.csv", 'w')
+    f2 = open("datasets/nltk_10Year.csv", 'w')
     f2.write('title,' + 'artist,' + ','.join(header) + '\n')
     for song, row in zip(lyric_dict.keys(), features):
         str_row = [str(i) for i in row]
@@ -68,7 +68,7 @@ def predict_popularity(X, Y):
 if __name__ == "__main__":
     '''create csv files for features and print prediction accuracies'''
     decade_features()
-    all_, ah= generic_features("datasets/lyrics_all.csv", "datasets/nltk_all.csv")
+    all_, ah= generic_features("datasets/lyrics_10Week.csv", "datasets/nltk_all.csv")
     coldplay_, ch = generic_features("datasets/lyrics_coldplay.csv", "datasets/nltk_coldplay.csv")
     drake_, dh = generic_features("datasets/lyrics_drake.csv", "datasets/nltk_drake.csv")
     rihanna_, rh = generic_features("datasets/lyrics_rihanna.csv", "datasets/nltk_rihanna.csv")
